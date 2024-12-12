@@ -1,13 +1,10 @@
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from object.informacion_cita import InformacionCita
-from llama_index.core import VectorStoreIndex
 from utils import buscar_fila, generar_codigo_cita, get_colombia_time, get_google_sheets_service
-from llama_index.llms.openai import OpenAI
 from datetime import datetime, timedelta
 from langchain_core.tools import tool
 from pydantic import ValidationError
 from dotenv import load_dotenv
-from pinecone import Pinecone
 import logging
 import os
 
@@ -29,7 +26,7 @@ def lookup_project_info(query: str) -> str:
         lookup_project_info(query="Dame información sobre las etapas de construcción")
     """
     from langchain_pinecone import PineconeVectorStore
-
+    load_dotenv()
     index_name = os.getenv('INDEX_NAME')
     embeddings = OpenAIEmbeddings()
     vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
@@ -133,6 +130,7 @@ def write_to_sheet_with_validation(cadena: str) -> str:
     Returns:
         str: Mensaje indicando el resultado de la operación.
     """
+    load_dotenv()
     sheet_id=os.getenv("SHEET_ID")
     service = get_google_sheets_service()
     sheet = service.spreadsheets()
@@ -207,6 +205,7 @@ def erase_from_sheet(codigo: str) -> str:
     Returns:
         str: Mensaje indicando el resultado de la operación.
     """
+    load_dotenv()
     sheet_id=os.getenv("SHEET_ID")
     service = get_google_sheets_service()
     sheet = service.spreadsheets()
@@ -258,6 +257,7 @@ def modify_sheet(codigo: str, hora: str = None, fecha: str = None, modalidad: st
     example:
     Ejemplo de uso:("JUA-b2295cec",None,None,"Presencial")
     """
+    load_dotenv()
     sheet_id=os.getenv("SHEET_ID")
     service = get_google_sheets_service()
     sheet = service.spreadsheets()

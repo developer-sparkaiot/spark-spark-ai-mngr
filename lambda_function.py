@@ -1,4 +1,4 @@
-from tools import lookup_project_info,table_price_info,validate_date,next_day_of_week,write_to_sheet_with_validation
+from tools import lookup_project_info,validate_date,next_day_of_week,write_to_sheet_with_validation,modify_sheet,erase_from_sheet
 from utils import get_colombia_time, send_message, split_text_and_images , get_prompts
 from langchain_community.chat_message_histories import DynamoDBChatMessageHistory
 from langchain_openai import AzureOpenAIEmbeddings,AzureChatOpenAI,ChatOpenAI
@@ -104,7 +104,7 @@ primary_assistant_prompt = ChatPromptTemplate.from_messages(
     ]
 ).partial(time=get_colombia_time().strftime("%Y-%m-%d %H:%M:%S"))
 
-tools = [lookup_project_info,table_price_info,validate_date,next_day_of_week,write_to_sheet_with_validation]
+tools = [lookup_project_info,modify_sheet,erase_from_sheet,validate_date,next_day_of_week,write_to_sheet_with_validation]
 part_1_assistant_runnable = primary_assistant_prompt | llm.bind_tools(tools)
 
 builder = StateGraph(State)
