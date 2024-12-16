@@ -1,5 +1,5 @@
 from tools import lookup_project_info,validate_date,next_day_of_week,write_to_sheet_with_validation,modify_sheet,erase_from_sheet
-from utils import get_colombia_time, send_message, split_text_and_images , get_prompts
+from utils import get_colombia_time, send_message, split_text, split_text_and_images , get_prompts
 from langchain_community.chat_message_histories import DynamoDBChatMessageHistory
 from langchain_openai import AzureOpenAIEmbeddings,AzureChatOpenAI,ChatOpenAI
 from langchain_core.messages import trim_messages, ToolMessage
@@ -36,7 +36,7 @@ table_name = os.getenv("MESSAGE_MEMORY_TABLE") # Nombre de la tabla de DynamoDB
 
 class State(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
-llm = ChatOpenAI(model=os.getenv('GPT_MODEL'), max_tokens=200)
+llm = ChatOpenAI(model=os.getenv('GPT_MODEL'), max_tokens=150)
 """
 llm = AzureChatOpenAI(
     azure_deployment=os.getenv("AZURE_DEPLOYMENT_NAME"),
@@ -198,7 +198,9 @@ async def chat_with_user(request: Request):
 
             # Enviar el texto primero
             if text_content:
-                send_message(whatsapp_number, text_content)
+                messages=split_text(text_content)
+                for message in messages:
+                    send_message(whatsapp_number, message)
                 logger.info(f"Sent text message to {whatsapp_number}: {text_content}")
 
             # Enviar cada imagen como mensaje independiente

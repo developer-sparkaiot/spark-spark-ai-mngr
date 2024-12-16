@@ -142,3 +142,11 @@ def buscar_fila(codigo: str) -> int:
         return -1
     except Exception as e:
         raise RuntimeError(f"Error al buscar el código: {e}")
+    
+def split_text(text):
+    paragraphs = text.split('\n\n')
+    result = []
+    for i in range(0, len(paragraphs), 2):
+        segment = '\n\n'.join(paragraphs[i:i+2])
+        result.append(segment)
+    return result
