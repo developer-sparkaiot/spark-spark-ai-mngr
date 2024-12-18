@@ -22,8 +22,8 @@ def lookup_project_info(query: str) -> str:
         str: Un string con la información relevante del proyecto basada en los criterios de búsqueda.
 
     Ejemplo de uso:
-        lookup_project_info(query="Cuéntame más sobre el proyecto Montebello")
-        lookup_project_info(query="Dame información sobre las etapas de construcción")
+        lookup_project_info(query="Cuéntame sobre las metas del proyecto")
+        lookup_project_info(query="que productos tienen")
     """
     from langchain_pinecone import PineconeVectorStore
     load_dotenv()
@@ -31,7 +31,7 @@ def lookup_project_info(query: str) -> str:
     embeddings = OpenAIEmbeddings()
     vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
     docs = vectorstore.similarity_search(query, k=2)
-    llm = ChatOpenAI(model=os.getenv('GPT_MODEL'), max_tokens=200)
+    llm = ChatOpenAI(model=os.getenv('GPT_MODEL'), max_tokens=180)
 
     relevant_texts = [doc.page_content for doc in docs]
     prompt = f"""
@@ -40,7 +40,7 @@ def lookup_project_info(query: str) -> str:
         {''.join(relevant_texts)}
 
         Basado en la consulta: "{query}"
-        proporciona una respuesta clara y concisa dentro del límite establecido.
+        proporciona una respuesta clara
     """
     response = llm.invoke(prompt)
     return response.content

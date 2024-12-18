@@ -17,6 +17,7 @@ from langchain.schema import AIMessage
 from fastapi import FastAPI, Request
 from dotenv import load_dotenv
 from typing import Annotated
+from time import sleep
 import uvicorn
 import logging
 import boto3
@@ -36,7 +37,7 @@ table_name = os.getenv("MESSAGE_MEMORY_TABLE") # Nombre de la tabla de DynamoDB
 
 class State(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
-llm = ChatOpenAI(model=os.getenv('GPT_MODEL'), max_tokens=150)
+llm = ChatOpenAI(model=os.getenv('GPT_MODEL'), max_tokens=250)
 """
 llm = AzureChatOpenAI(
     azure_deployment=os.getenv("AZURE_DEPLOYMENT_NAME"),
@@ -59,7 +60,7 @@ class Assistant:
         while True:
             configuration = config.get("configurable", {})
             passenger_id = configuration.get("passenger_id", None)
-            state = {**state, "user_info": passenger_id}
+            state = {**state, "user_info": passenger_id,"time":get_colombia_time().strftime("%Y-%m-%d %H:%M:%S")}
             result = self.runnable.invoke(state)
             # If the LLM happens to return an empty response, we will re-prompt it
             # for an actual response.
@@ -102,7 +103,7 @@ primary_assistant_prompt = ChatPromptTemplate.from_messages(
         ),
         ("placeholder", "{messages}"),
     ]
-).partial(time=get_colombia_time().strftime("%Y-%m-%d %H:%M:%S"))
+)
 
 tools = [lookup_project_info,modify_sheet,erase_from_sheet,validate_date,next_day_of_week,write_to_sheet_with_validation]
 part_1_assistant_runnable = primary_assistant_prompt | llm.bind_tools(tools)
@@ -168,6 +169,7 @@ async def chat_with_user(request: Request):
         include_system=True,
     )
 
+    
     # Prepara el estado y la configuración
     state = {
         "messages": previous_messages + [("user", user_message)]  # Combina el historial con el nuevo mensaje
@@ -176,7 +178,7 @@ async def chat_with_user(request: Request):
     config = {
         "configurable": {
             "passenger_id": None,
-            "thread_id": whatsapp_number,  # Usa el número de WhatsApp como ID de hilo
+            "thread_id": whatsapp_number, # Usa el número de WhatsApp como ID de hilo
         }
     }
 
@@ -201,6 +203,7 @@ async def chat_with_user(request: Request):
                 messages=split_text(text_content)
                 for message in messages:
                     send_message(whatsapp_number, message)
+                    sleep(1)
                 logger.info(f"Sent text message to {whatsapp_number}: {text_content}")
 
             # Enviar cada imagen como mensaje independiente
