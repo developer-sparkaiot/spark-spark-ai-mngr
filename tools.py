@@ -64,18 +64,19 @@ def validate_date(mes: int, dia: int) -> str:
     try:
         actual_date = get_colombia_time()
         anio = actual_date.year
-        if actual_date.month > mes or (actual_date.month == mes and actual_date.day > dia):
+        user_date = datetime(anio, mes, dia)
+        if actual_date.month > user_date.month or (actual_date.month == user_date.month and actual_date.day > user_date.day):
             anio += 1
         fecha_input = datetime(anio, mes, dia)
         three_months_ahead = actual_date + timedelta(days=90)
         
         if fecha_input <= actual_date or fecha_input > three_months_ahead:
-            return "La fecha no puede ser superior a 3 meses desde la fecha actual."
+            return "la fecha ya paso"
         
-        if fecha_input.weekday() >= 3 and fecha_input.weekday() <= 6:
+        if fecha_input.weekday() >= 1 and fecha_input.weekday() <= 6:
             return "La fecha es válida."
         else:
-            return "La fecha debe ser entre jueves y domingo."
+            return "La fecha debe ser entre lunes y sabado."
     except ValueError:
         return "La fecha no existe."
 
@@ -172,10 +173,15 @@ def write_to_sheet_with_validation(cadena: str) -> str:
             return "Guardado exitoso"
 
         # Validar conflictos de horario
+        conflict="Horarios ocupados:"
         for row in rows[1:]:
             if len(row) > 1:  # Asegurarse de que la fila tenga datos en ambas columnas
                 if row[0] == fecha_persona and row[1] == hora_persona:
-                    return f"Horarios ocupados: {rows[1:]}"
+                    for row in rows[1:]:
+                        if len(row) > 1:
+                            if row[0] == fecha_persona:
+                                conflict+=f"\n{row[1]}"
+                    return conflict
 
         # Guardar los datos si no hay conflictos
         persona["codigo"] = generar_codigo_cita(persona.get("nombre"))

@@ -152,7 +152,6 @@ async def chat_with_user(request: Request):
 
     # Recupera el historial de mensajes de DynamoDB
     previous_messages = history.messages  # Recupera el historial almacenado
-    logger.info(f"Previous messages: {previous_messages}")
 
     # Almacena el mensaje del usuario en DynamoDB
     history.add_user_message(user_message)
